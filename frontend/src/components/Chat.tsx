@@ -2,7 +2,7 @@ import Image from 'next/image';
 
 export function Chat() {
   return (
-    <div className="h-[80%] w-1/5 bg-app-gray-700 px-4 pt-4 rounded-md mt-8 mb-2 mx-2 flex">
+    <div className="h-[80%] w-1/5 bg-app-gray-700 px-4 pt-4 rounded-md mt-8 mb-2 mx-2 hidden md:flex">
       <div className="relative w-full">
         <div className="bg-app-gray-500 rounded p-2">
           <div className="flex items-center gap-2 leading-6 text-app-pink-500">

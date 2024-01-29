@@ -15,8 +15,36 @@ export default function Room({ params }: RoomProps) {
       <Header />
       <div className="flex-1 w-full flex justify-center">
         <Container>
-          <div className="w-4/5 h-[85%]">
-            <span>Room</span>
+          <div className="w-full md:w-4/5 h-[85%] p-8">
+            <div className="grid md:grid-cols-2 grid-cols-1 gap-16 h-full">
+              <div className="relative bg-app-gray-700 h-full w-full rounded-md p-2">
+                <video className="h-full w-full"></video>
+                <span className="absolute bottom-2 left-3 text-app-white text-xl leading-6">
+                  Rudolf HiOk
+                </span>
+              </div>
+
+              <div className="relative bg-app-gray-700 h-full w-full rounded-md p-2">
+                <video className="h-full w-full"></video>
+                <span className="absolute bottom-2 left-3 text-app-white text-xl leading-6">
+                  Rudolf HiOk
+                </span>
+              </div>
+
+              <div className="relative bg-app-gray-700 h-full w-full rounded-md p-2">
+                <video className="h-full w-full"></video>
+                <span className="absolute bottom-2 left-3 text-app-white text-xl leading-6">
+                  Rudolf HiOk
+                </span>
+              </div>
+
+              <div className="relative bg-app-gray-700 h-full w-full rounded-md p-2">
+                <video className="h-full w-full"></video>
+                <span className="absolute bottom-2 left-3 text-app-white text-xl leading-6">
+                  Rudolf HiOk
+                </span>
+              </div>
+            </div>
           </div>
           <Chat />
           <Footer />
