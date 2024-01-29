@@ -16,7 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
-      <body className={rubik.className}>{children}</body>
+      <body className={`${rubik.className} bg-app-gray-950 text-app-white`}>
+        {children}
+      </body>
     </html>
   );
 }
