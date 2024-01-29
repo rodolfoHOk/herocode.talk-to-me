@@ -1,8 +1,10 @@
 import type { Metadata } from 'next';
-import { Rubik } from 'next/font/google';
+import { Rubik, Inter } from 'next/font/google';
 import './globals.css';
 
-const rubik = Rubik({ subsets: ['latin'] });
+export const rubik = Rubik({ subsets: ['latin'] });
+
+export const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Talk to Me',
