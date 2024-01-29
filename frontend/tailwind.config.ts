@@ -14,6 +14,7 @@ const config: Config = {
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       colors: {
+        'app-gray-50': '#D9D9D9',
         'app-gray-100': '#D7D7D7',
         'app-gray-200': '#A8A8A8',
         'app-gray-300': '#A0AEC0',
@@ -26,6 +27,9 @@ const config: Config = {
         'app-cyan-500': '#81E6D9',
         'app-pink-500': '#C636EA',
         'app-white': '#FFFFFF',
+      },
+      fontSize: {
+        '2xs': '10px',
       },
     },
   },

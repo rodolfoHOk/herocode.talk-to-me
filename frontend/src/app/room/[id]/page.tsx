@@ -1,3 +1,4 @@
+import { Chat } from '@/components/Chat';
 import { Container } from '@/components/Container';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
@@ -10,13 +11,16 @@ interface RoomProps {
 
 export default function Room({ params }: RoomProps) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col">
       <Header />
-      <div className="flex-1 w-full h-full flex justify-center">
+      <div className="flex-1 w-full flex justify-center">
         <Container>
-          <span>Room</span>
+          <div className="w-4/5 h-[85%]">
+            <span>Room</span>
+          </div>
+          <Chat />
+          <Footer />
         </Container>
-        <Footer />
       </div>
     </div>
   );
