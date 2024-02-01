@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Rubik, Inter } from 'next/font/google';
 import './globals.css';
+import { SocketProvider } from '@/contexts/SocketContext';
 
 export const rubik = Rubik({ subsets: ['latin'], variable: '--font-inter' });
 
@@ -18,7 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={`${rubik.variable} ${inter.variable}`}>
-      <body className="bg-app-gray-950 text-app-white">{children}</body>
+      <body className="bg-app-gray-950 text-app-white">
+        <SocketProvider>{children}</SocketProvider>
+      </body>
     </html>
   );
 }

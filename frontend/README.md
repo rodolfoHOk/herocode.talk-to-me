@@ -8,6 +8,12 @@
 - React.js
 - Next.js (v.14 with App router)
 - Tailwind CSS
+- Socket.io
+
+### Bibliotecas adicionais
+
+- @svgr/cli -D
+- socket.io-client
 
 ## Links
 
