@@ -7,6 +7,7 @@
 - Typescript / Javascript
 - Node.js
 - Express
+- Socket.io
 
 ## Bibliotecas adicionais
 
@@ -15,6 +16,7 @@
 - express
 - socket.io
 - cors
+- @types/express -D
 
 ## Node.js
 
