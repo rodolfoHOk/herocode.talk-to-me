@@ -1,5 +1,7 @@
 # Talk to Me - Front-end
 
+> Semana do Herói 3a edição da HeroCode
+
 ## Tecnologias
 
 - Typescript / Javascript

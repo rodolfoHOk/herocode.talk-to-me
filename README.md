@@ -6,11 +6,16 @@
 
 - Typescript / Javascript
 - Next.js / React.js
+- Socket.io
 
-## Imagens
+## Links
 
--
+- [Figma design](https://www.figma.com/file/NIIwJcvsPIorvkGJpALbPC/Talk-to-me!?type=design&node-id=0-1&mode=design&t=GjEz4viuvDxtGjX9-0)
+
+- [Socket.io](https://socket.io/docs/v4/)
 
 ## Projetos
 
-- [frontend](./frontend/README.md)
+- [front-end](./frontend/README.md)
+
+- [back-end](./backend/README.md)
