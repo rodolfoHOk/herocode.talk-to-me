@@ -31,7 +31,7 @@ export function FormWrapper() {
           Nova reunião
         </span>
       </div>
-      <div className="p-12 flex flex-col gap-10">
+      <div className="p-12 flex flex-col">
         <RoomSelector selectedRoom={selectedRoom} />
       </div>
     </div>

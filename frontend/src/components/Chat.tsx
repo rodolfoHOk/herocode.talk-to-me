@@ -30,7 +30,7 @@ export function Chat({ roomId }: IChat) {
     if (currentMsg.current && currentMsg.current.value.trim() !== '') {
       const sendMsgToServer = {
         message: currentMsg.current.value,
-        username: 'Rudolf HiOk',
+        username: sessionStorage.getItem('username') as string,
         roomId: roomId,
         date_time: new Date().toISOString(),
       };
