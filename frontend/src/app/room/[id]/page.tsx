@@ -1,7 +1,11 @@
+'use client';
+
 import { Chat } from '@/components/Chat';
 import { Container } from '@/components/Container';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
+import { SocketContext } from '@/contexts/SocketContext';
+import { useContext, useEffect } from 'react';
 
 interface RoomProps {
   params: {
@@ -10,6 +14,18 @@ interface RoomProps {
 }
 
 export default function Room({ params }: RoomProps) {
+  const { socket } = useContext(SocketContext);
+
+  useEffect(() => {
+    socket?.on('connect', () => {
+      console.log('connected');
+      socket?.emit('subscribe', {
+        roomId: params.id,
+        socketId: socket.id,
+      });
+    });
+  }, [socket, params.id]);
+
   return (
     <div className="h-screen flex flex-col">
       <Header />
@@ -46,7 +62,7 @@ export default function Room({ params }: RoomProps) {
               </div>
             </div>
           </div>
-          <Chat />
+          <Chat roomId={params.id} />
           <Footer />
         </Container>
       </div>
