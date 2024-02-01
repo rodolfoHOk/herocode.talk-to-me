@@ -1,12 +1,22 @@
-import { InputHTMLAttributes } from 'react';
+import {
+  ForwardRefRenderFunction,
+  InputHTMLAttributes,
+  forwardRef,
+} from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {}
 
-export function Input(inputProps: InputProps) {
+const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
+  { className, ...rest },
+  ref
+) => {
   return (
     <input
-      className="w-full p-4 bg-app-gray-500 rounded-md placeholder:text-app-gray-300 text-lg"
-      {...inputProps}
+      className={`w-full p-4 bg-app-gray-500 rounded-md placeholder:text-app-gray-300 text-lg ${className}`}
+      ref={ref}
+      {...rest}
     />
   );
-}
+};
+
+export const Input = forwardRef(InputBase);

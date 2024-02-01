@@ -31,6 +31,10 @@ const config: Config = {
       fontSize: {
         '2xs': '10px',
       },
+      fontFamily: {
+        inter: ['var(--font-inter)'],
+        rubik: ['var(--font-rubik)'],
+      },
     },
   },
   plugins: [],

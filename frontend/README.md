@@ -2,7 +2,7 @@
 
 ## Tecnologias
 
-- Typescript
+- Typescript / Javascript
 - React.js
 - Next.js (v.14 with App router)
 - Tailwind CSS
@@ -10,8 +10,6 @@
 ## Links
 
 - [Figma design](https://www.figma.com/file/NIIwJcvsPIorvkGJpALbPC/Talk-to-me!?type=design&node-id=0-1&mode=design&t=GjEz4viuvDxtGjX9-0)
-
-## 29:00
 
 ## Next Default Doc
 

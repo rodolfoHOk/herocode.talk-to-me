@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import { Rubik, Inter } from 'next/font/google';
 import './globals.css';
 
-export const rubik = Rubik({ subsets: ['latin'] });
+export const rubik = Rubik({ subsets: ['latin'], variable: '--font-inter' });
 
-export const inter = Inter({ subsets: ['latin'] });
+export const inter = Inter({ subsets: ['latin'], variable: '--font-rubik' });
 
 export const metadata: Metadata = {
   title: 'Talk to Me',
@@ -17,10 +17,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body className={`${rubik.className} bg-app-gray-950 text-app-white`}>
-        {children}
-      </body>
+    <html lang="pt-BR" className={`${rubik.variable} ${inter.variable}`}>
+      <body className="bg-app-gray-950 text-app-white">{children}</body>
     </html>
   );
 }
