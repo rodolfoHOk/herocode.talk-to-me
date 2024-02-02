@@ -9,6 +9,7 @@
 - Next.js (v.14 with App router)
 - Tailwind CSS
 - Socket.io
+- Câmera
 
 ### Bibliotecas adicionais
 

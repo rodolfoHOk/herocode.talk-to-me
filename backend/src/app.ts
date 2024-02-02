@@ -29,14 +29,44 @@ export class App {
     socket.on('subscribe', (data) => {
       console.log(`User enter in room: ${data.roomId}`);
       socket.join(data.roomId);
+      socket.join(data.socketId);
 
-      socket.on('chat', (data) => {
-        console.log(data);
-        socket.broadcast.to(data.roomId).emit('chat', {
-          message: data.message,
+      const roomsSession = Array.from(socket.rooms);
+      if (roomsSession.length > 1) {
+        socket.to(data.roomId).emit('new user', {
+          socketId: socket.id,
           username: data.username,
-          date_time: data.date_time,
         });
+      }
+    });
+
+    socket.on('newUserStart', (data) => {
+      console.log('Novo usuário chegou!');
+      socket.to(data.to).emit('newUserStart', {
+        sender: data.sender,
+      });
+    });
+
+    socket.on('sdp', (data) => {
+      socket.to(data.to).emit('sdp', {
+        description: data.description,
+        sender: data.sender,
+      });
+    });
+
+    socket.on('ice candidates', (data) => {
+      socket.to(data.to).emit('ice candidates', {
+        candidate: data.candidate,
+        sender: data.sender,
+      });
+    });
+
+    socket.on('chat', (data) => {
+      console.log(data);
+      socket.broadcast.to(data.roomId).emit('chat', {
+        message: data.message,
+        username: data.username,
+        date_time: data.date_time,
       });
     });
   }

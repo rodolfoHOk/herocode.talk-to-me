@@ -14,8 +14,12 @@
 
 - [Socket.io](https://socket.io/docs/v4/)
 
+- [WebRTC](https://webrtc.org/?hl=pt-br)
+
 ## Projetos
 
 - [front-end](./frontend/README.md)
 
 - [back-end](./backend/README.md)
+
+56:56
