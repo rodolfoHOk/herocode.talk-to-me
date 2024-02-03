@@ -6,17 +6,27 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { SocketContext } from '@/contexts/SocketContext';
 import { useRouter } from 'next/navigation';
-import { useCallback, useContext, useEffect, useRef, useState } from 'react';
-
-interface IAnswer {
-  description: RTCSessionDescriptionInit;
-  sender: string;
-}
+import { useContext, useEffect, useRef, useState } from 'react';
 
 export interface IDataStream {
   id: string;
   stream: MediaStream;
   username: string;
+}
+
+interface INewUser {
+  socketId: string;
+  username: string;
+}
+
+interface INewUserStart {
+  sender: string;
+  username: string;
+}
+
+interface IAnswer {
+  description: RTCSessionDescriptionInit;
+  sender: string;
 }
 
 interface ICandidates {
@@ -38,69 +48,6 @@ export default function Room({ params }: RoomProps) {
   const [remoteStreams, setRemoteStreams] = useState<IDataStream[]>([]);
   const [videoMediaStream, setVideoMediaStream] = useState<MediaStream | null>(
     null
-  );
-
-  useEffect(() => {
-    const username = sessionStorage.getItem('username');
-
-    socket?.on('connect', async () => {
-      console.log('conectado');
-      socket?.emit('subscribe', {
-        roomId: params.id,
-        socketId: socket.id,
-        username,
-      });
-      await initLocalCamera();
-    });
-
-    socket?.on('new user', (data) => {
-      console.log('Novo usuário tentando se conectar');
-      createPeerConnection(data.socketId, false, data.username);
-      socket.emit('newUserStart', {
-        to: data.socketId,
-        sender: socket.id,
-        username,
-      });
-    });
-
-    socket?.on('newUserStart', (data) => {
-      console.log('Usuário entrou na sala', data);
-      createPeerConnection(data.sender, true, data.username);
-    });
-
-    socket?.on('sdp', (data) => handleAnswer(data));
-
-    socket?.on('ice candidates', (data) => handleIceCandidates(data));
-  }, [socket, params.id]);
-
-  const handleIceCandidates = async (data: ICandidates) => {
-    const peerConnection = peerConnections.current[data.sender];
-    if (data.candidate) {
-      await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-    }
-  };
-
-  const handleAnswer = useCallback(
-    async (data: IAnswer) => {
-      const peerConnection = peerConnections.current[data.sender];
-      if (data.description.type === 'offer') {
-        await peerConnection.setRemoteDescription(data.description);
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
-        console.log('Criando uma resposta a oferta');
-        socket?.emit('sdp', {
-          to: data.sender,
-          sender: socket.id,
-          description: peerConnection.localDescription,
-        });
-      } else if (data.description.type === 'answer') {
-        console.log('Ouvindo a resposta da oferta');
-        await peerConnection.setRemoteDescription(
-          new RTCSessionDescription(data.description)
-        );
-      }
-    },
-    [socket]
   );
 
   const createPeerConnection = async (
@@ -134,7 +81,6 @@ export default function Room({ params }: RoomProps) {
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
       console.log('Criando uma oferta');
-
       socket?.emit('sdp', {
         to: socketId,
         sender: socket.id,
@@ -144,13 +90,11 @@ export default function Room({ params }: RoomProps) {
 
     peerConnection.ontrack = (event) => {
       const remoteStream = event.streams[0];
-
       const dataStream: IDataStream = {
         id: socketId,
         stream: remoteStream,
         username,
       };
-
       setRemoteStreams((prevState) => {
         if (!prevState.some((stream) => stream.id === socketId)) {
           return [...prevState, dataStream];
@@ -206,7 +150,7 @@ export default function Room({ params }: RoomProps) {
         noiseSuppression: true,
         echoCancellation: true,
       },
-      video: false,
+      video: true,
     });
     setVideoMediaStream(video);
     if (localStream.current) localStream.current.srcObject = video;
@@ -218,7 +162,7 @@ export default function Room({ params }: RoomProps) {
         noiseSuppression: true,
         echoCancellation: true,
       },
-      video: false,
+      video: true,
     });
     return video;
   };
@@ -233,6 +177,67 @@ export default function Room({ params }: RoomProps) {
     socket?.disconnect();
     router.push('/');
   };
+
+  const handleConnect = async (username: string, roomId: string) => {
+    console.log('conectado');
+    socket?.emit('subscribe', {
+      roomId,
+      socketId: socket.id,
+      username,
+    });
+    await initLocalCamera();
+  };
+
+  const handleNewUser = async (data: INewUser, username: string) => {
+    console.log('Novo usuário tentando se conectar');
+    createPeerConnection(data.socketId, false, data.username);
+    socket?.emit('newUserStart', {
+      to: data.socketId,
+      sender: socket.id,
+      username,
+    });
+  };
+
+  const handleNewUserStart = (data: INewUserStart) => {
+    console.log('Usuário entrou na sala', data);
+    createPeerConnection(data.sender, true, data.username);
+  };
+
+  const handleAnswer = async (data: IAnswer) => {
+    const peerConnection = peerConnections.current[data.sender];
+    if (data.description.type === 'offer') {
+      await peerConnection.setRemoteDescription(data.description);
+      const answer = await peerConnection.createAnswer();
+      await peerConnection.setLocalDescription(answer);
+      console.log('Criando uma resposta a oferta');
+      socket?.emit('sdp', {
+        to: data.sender,
+        sender: socket.id,
+        description: peerConnection.localDescription,
+      });
+    } else if (data.description.type === 'answer') {
+      console.log('Ouvindo a resposta da oferta');
+      await peerConnection.setRemoteDescription(
+        new RTCSessionDescription(data.description)
+      );
+    }
+  };
+
+  const handleIceCandidates = async (data: ICandidates) => {
+    const peerConnection = peerConnections.current[data.sender];
+    if (data.candidate) {
+      await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+    }
+  };
+
+  useEffect(() => {
+    const username = sessionStorage.getItem('username') as string;
+    socket?.on('connect', () => handleConnect(username, params.id));
+    socket?.on('new user', (data) => handleNewUser(data, username));
+    socket?.on('newUserStart', (data) => handleNewUserStart(data));
+    socket?.on('sdp', (data) => handleAnswer(data));
+    socket?.on('ice candidates', (data) => handleIceCandidates(data));
+  }, [socket, params.id]);
 
   return (
     <div className="h-screen flex flex-col">

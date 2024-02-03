@@ -26,6 +26,7 @@ export class App {
 
   private socketEvents(socket: Socket) {
     console.log(`Socket connected: ${socket.id}`);
+
     socket.on('subscribe', (data) => {
       console.log(`User enter in room: ${data.roomId}`);
       socket.join(data.roomId);

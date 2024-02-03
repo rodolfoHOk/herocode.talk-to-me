@@ -7,6 +7,7 @@
 - Typescript / Javascript
 - Next.js / React.js
 - Socket.io
+- WebRTC
 
 ## Links
 

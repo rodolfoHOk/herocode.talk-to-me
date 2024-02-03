@@ -10,6 +10,7 @@
 - Tailwind CSS
 - Socket.io
 - Câmera
+- WebRTC
 
 ### Bibliotecas adicionais
 
