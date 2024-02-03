@@ -44,6 +44,7 @@ export class App {
       console.log('Novo usuário chegou!');
       socket.to(data.to).emit('newUserStart', {
         sender: data.sender,
+        username: data.username,
       });
     });
 
@@ -68,6 +69,11 @@ export class App {
         username: data.username,
         date_time: data.date_time,
       });
+    });
+
+    socket.on('disconnect', () => {
+      console.log('Socket desconectado: ' + socket.id);
+      socket.disconnect();
     });
   }
 }

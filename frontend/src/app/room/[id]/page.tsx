@@ -5,11 +5,18 @@ import { Container } from '@/components/Container';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { SocketContext } from '@/contexts/SocketContext';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 interface IAnswer {
   description: RTCSessionDescriptionInit;
   sender: string;
+}
+
+export interface IDataStream {
+  id: string;
+  stream: MediaStream;
+  username: string;
 }
 
 interface ICandidates {
@@ -24,36 +31,41 @@ interface RoomProps {
 }
 
 export default function Room({ params }: RoomProps) {
+  const router = useRouter();
   const { socket } = useContext(SocketContext);
   const localStream = useRef<HTMLVideoElement>(null);
   const peerConnections = useRef<Record<string, RTCPeerConnection>>({});
-  const [remoteStreams, setRemoteStreams] = useState<MediaStream[]>([]);
+  const [remoteStreams, setRemoteStreams] = useState<IDataStream[]>([]);
   const [videoMediaStream, setVideoMediaStream] = useState<MediaStream | null>(
     null
   );
 
   useEffect(() => {
+    const username = sessionStorage.getItem('username');
+
     socket?.on('connect', async () => {
       console.log('conectado');
       socket?.emit('subscribe', {
         roomId: params.id,
         socketId: socket.id,
+        username,
       });
       await initLocalCamera();
     });
 
     socket?.on('new user', (data) => {
       console.log('Novo usuário tentando se conectar');
-      createPeerConnection(data.socketId, false);
+      createPeerConnection(data.socketId, false, data.username);
       socket.emit('newUserStart', {
         to: data.socketId,
         sender: socket.id,
+        username,
       });
     });
 
     socket?.on('newUserStart', (data) => {
       console.log('Usuário entrou na sala', data);
-      createPeerConnection(data.sender, true);
+      createPeerConnection(data.sender, true, data.username);
     });
 
     socket?.on('sdp', (data) => handleAnswer(data));
@@ -68,29 +80,33 @@ export default function Room({ params }: RoomProps) {
     }
   };
 
-  const handleAnswer = async (data: IAnswer) => {
-    const peerConnection = peerConnections.current[data.sender];
-    if (data.description.type === 'offer') {
-      await peerConnection.setRemoteDescription(data.description);
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-      console.log('Criando uma resposta a oferta');
-      socket?.emit('sdp', {
-        to: data.sender,
-        sender: socket.id,
-        description: peerConnection.localDescription,
-      });
-    } else if (data.description.type === 'answer') {
-      console.log('Ouvindo a resposta da oferta');
-      await peerConnection.setRemoteDescription(
-        new RTCSessionDescription(data.description)
-      );
-    }
-  };
+  const handleAnswer = useCallback(
+    async (data: IAnswer) => {
+      const peerConnection = peerConnections.current[data.sender];
+      if (data.description.type === 'offer') {
+        await peerConnection.setRemoteDescription(data.description);
+        const answer = await peerConnection.createAnswer();
+        await peerConnection.setLocalDescription(answer);
+        console.log('Criando uma resposta a oferta');
+        socket?.emit('sdp', {
+          to: data.sender,
+          sender: socket.id,
+          description: peerConnection.localDescription,
+        });
+      } else if (data.description.type === 'answer') {
+        console.log('Ouvindo a resposta da oferta');
+        await peerConnection.setRemoteDescription(
+          new RTCSessionDescription(data.description)
+        );
+      }
+    },
+    [socket]
+  );
 
   const createPeerConnection = async (
     socketId: string,
-    createOffer: boolean
+    createOffer: boolean,
+    username: string
   ) => {
     const config: RTCConfiguration = {
       iceServers: [
@@ -128,7 +144,19 @@ export default function Room({ params }: RoomProps) {
 
     peerConnection.ontrack = (event) => {
       const remoteStream = event.streams[0];
-      setRemoteStreams((prev) => [...prev, remoteStream]);
+
+      const dataStream: IDataStream = {
+        id: socketId,
+        stream: remoteStream,
+        username,
+      };
+
+      setRemoteStreams((prevState) => {
+        if (!prevState.some((stream) => stream.id === socketId)) {
+          return [...prevState, dataStream];
+        }
+        return prevState;
+      });
     };
 
     peer.onicecandidate = (event) => {
@@ -140,6 +168,36 @@ export default function Room({ params }: RoomProps) {
         });
       }
     };
+
+    peerConnection.onsignalingstatechange = (event) => {
+      switch (peerConnection.signalingState) {
+        case 'closed':
+          setRemoteStreams((prevState) =>
+            prevState.filter((data) => data.id !== socketId)
+          );
+          break;
+      }
+    };
+
+    peerConnection.onconnectionstatechange = (event) => {
+      switch (peerConnection.connectionState) {
+        case 'disconnected':
+          setRemoteStreams((prevState) =>
+            prevState.filter((data) => data.id !== socketId)
+          );
+          break;
+        case 'failed':
+          setRemoteStreams((prevState) =>
+            prevState.filter((data) => data.id !== socketId)
+          );
+          break;
+        case 'closed':
+          setRemoteStreams((prevState) =>
+            prevState.filter((data) => data.id !== socketId)
+          );
+          break;
+      }
+    };
   };
 
   const initLocalCamera = async () => {
@@ -148,7 +206,7 @@ export default function Room({ params }: RoomProps) {
         noiseSuppression: true,
         echoCancellation: true,
       },
-      video: true,
+      video: false,
     });
     setVideoMediaStream(video);
     if (localStream.current) localStream.current.srcObject = video;
@@ -160,9 +218,20 @@ export default function Room({ params }: RoomProps) {
         noiseSuppression: true,
         echoCancellation: true,
       },
-      video: true,
+      video: false,
     });
     return video;
+  };
+
+  const logout = () => {
+    videoMediaStream?.getTracks().forEach((track) => {
+      track.stop();
+    });
+    Object.values(peerConnections.current).forEach((peerConnection) => {
+      peerConnection.close();
+    });
+    socket?.disconnect();
+    router.push('/');
   };
 
   return (
@@ -172,7 +241,7 @@ export default function Room({ params }: RoomProps) {
         <Container>
           <div className="w-full md:w-4/5 h-[85%] p-8">
             <div className="grid md:grid-cols-2 grid-cols-1 gap-16 h-full">
-              <div className="relative bg-app-gray-700 h-full w-full rounded-md p-2">
+              <div className="relative bg-app-gray-700 h-1/2 w-full rounded-md p-2">
                 <video
                   className="h-full w-full mirror-mode"
                   ref={localStream}
@@ -184,30 +253,35 @@ export default function Room({ params }: RoomProps) {
                 </span>
               </div>
 
-              {remoteStreams.map((stream, index) => (
+              {remoteStreams.map((data, index) => (
                 <div
                   key={index}
-                  className="relative bg-app-gray-700 h-full w-full rounded-md p-2"
+                  className="relative bg-app-gray-700 h-1/2 w-full rounded-md p-2"
                 >
                   <video
                     className="h-full w-full"
                     autoPlay
                     playsInline
                     ref={(video) => {
-                      if (video && video.srcObject !== stream) {
-                        video.srcObject = stream;
+                      if (video && video.srcObject !== data.stream) {
+                        video.srcObject = data.stream;
                       }
                     }}
                   />
                   <span className="absolute bottom-2 left-3 text-app-white text-xl leading-6">
-                    Nome do usuário
+                    {data.username}
                   </span>
                 </div>
               ))}
             </div>
           </div>
           <Chat roomId={params.id} />
-          <Footer />
+          <Footer
+            videoMediaStream={videoMediaStream}
+            peerConnections={peerConnections}
+            localStream={localStream}
+            logout={logout}
+          />
         </Container>
       </div>
     </div>
